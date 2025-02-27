@@ -1,0 +1,358 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/@prisma/bi/client"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("BI_URL")
+}
+
+model Amparos_Notas_Ressalvas {
+  id_prata_amparo_nota_ressalva BigInt    @id(map: "PK_Amparos_Notas_Ressalvas")
+  id_prata_assunto              BigInt?
+  sistema                       String?   @db.VarChar(20)
+  processo                      String?   @db.VarChar(20)
+  protocolo                     String?   @db.VarChar(20)
+  codigoAssunto                 String?   @db.VarChar(50)
+  tipoAmparoNotaRessalva        String?   @db.VarChar(1)
+  codAmparoNotaRessalva         String?   @db.VarChar(20)
+  seqAmparoNotaRessalva         Int?
+  txtAmparoNotaRessalva         String?   @db.VarChar(4000)
+  txtResumAmparoNotaRessalva    String?   @db.VarChar(500)
+  origem_carga                  String?   @db.VarChar(100)
+  dtcarga                       DateTime? @db.DateTime
+
+  @@index([sistema, processo, codigoAssunto], map: "NonClusteredIndex-20241113-162148")
+  @@index([id_prata_assunto], map: "NonClusteredIndex-20241121-110844")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Areas {
+  sistema           String?  @db.VarChar(20)
+  processo          String?  @db.VarChar(20)
+  protocolo         String?  @db.VarChar(20)
+  codigoAssuntoObra String?  @db.VarChar(50)
+  categoria         String?  @db.VarChar(200)
+  tipoArea          String?  @db.VarChar(50)
+  Area              Decimal? @db.Decimal(15, 2)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Assuntos {
+  id_prata_assunto     BigInt   @unique(map: "ClusteredIndex-20241113-162749", clustered: true)
+  id_prata_processo    BigInt?
+  sistema              String?   @db.VarChar(20)
+  processo             String?   @db.VarChar(20)
+  protocolo            String?   @db.VarChar(20)
+  codigoAssunto        String?   @db.VarChar(50)
+  dtInclusaoAssunto    DateTime? @db.Date
+  assuntoCod           String?   @db.VarChar(5)
+  assunto              String?   @db.VarChar(500)
+  aditivo              String?   @db.VarChar(50)
+  tipoRequerimento     String?   @db.VarChar(50)
+  situacaoAssunto      String?   @db.VarChar(50)
+  NumDocumento         String?   @db.VarChar(20)
+  numDocIrregularidade String?   @db.VarChar(50)
+  dtEmissaoDocumento   DateTime? @db.Date
+  statusDocumento      String?   @db.VarChar(20)
+  subprefeitura        String?   @db.VarChar(50)
+  distrito             String?   @db.VarChar(50)
+  dtcarga              DateTime? @db.DateTime
+
+  cadastro             Cadastros? @relation(fields: [id_prata_assunto], references: [id_prata_assunto])
+  categoria            Categorias?
+
+  @@index([sistema, processo, codigoAssunto], map: "Idx-20241111")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Assuntos_Separados {
+  id_prata_assunto  BigInt?
+  id_prata_processo BigInt?
+  sistema           String?   @db.VarChar(20)
+  processo          String?   @db.VarChar(20)
+  protocolo         String?   @db.VarChar(20)
+  codigoAssuntoObra String?   @db.VarChar(50)
+  dtInclusaoAssunto DateTime? @db.Date
+  assuntoCod        String?   @db.VarChar(5)
+  assunto           String?   @db.VarChar(500)
+  aditivo           String?   @db.VarChar(50)
+  tipoRequerimento  String?   @db.VarChar(50)
+  situacaoAssunto   String?   @db.VarChar(50)
+  numeroAlvara      String?   @db.VarChar(20)
+  dtEmissaoAlvara   DateTime? @db.Date
+  statusAlvara      String?   @db.VarChar(20)
+  dtcarga           DateTime? @db.DateTime
+  familiaASsunto    String?   @db.VarChar(100)
+  assuntoFormatado  String?   @db.VarChar(100)
+  assuntoPrincipal  String?   @db.VarChar(100)
+  assuntoSeparado   String?   @db.VarChar(100)
+  assuntoGrupo      String?   @db.VarChar(100)
+  instancia         String?   @db.VarChar(100)
+  tipoAditivo       String?   @db.VarChar(100)
+
+  @@index([id_prata_assunto], map: "ClusteredIndex-20241113-162856", clustered: true)
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Atividades {
+  codcategoria      String @db.VarChar(20)
+  txtcategoria      String? @db.VarChar(500)
+  codsubcategoria   String? @db.VarChar(500)
+  txtsubcategoria   String? @db.VarChar(500)
+  codgrupoatividade String? @db.VarChar(500)
+  txtgrupoatividade String? @db.VarChar(1000)
+  codatividade      String? @db.VarChar(500)
+  txtatividade      String? @db.VarChar(500)
+
+  @@index([codcategoria], map: "NonClusteredIndex-20241121-151550")
+  @@index([codatividade], map: "NonClusteredIndex-20241121-151610")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Cadastros {
+  id_prata_sql_incra BigInt    @unique(map: "ClusteredIndex-20241113-163204", clustered: true)
+  id_prata_assunto   BigInt    @unique
+  sistema            String?   @db.VarChar(20)
+  processo           String?   @db.VarChar(20)
+  protocolo          String?   @db.VarChar(20)
+  codigoAssunto      String?   @db.VarChar(50)
+  sql_incra          String?   @db.VarChar(50)
+  tipoSql_incra      String?   @db.VarChar(100)
+  dtcarga            DateTime? @db.DateTime
+
+  assunto            Assuntos?
+  endereco           Enderecos?
+
+  @@index([sistema, processo, codigoAssunto], map: "Idx-20241111")
+  @@index([sql_incra], map: "NonClusteredIndex-20241121-110714")
+  @@index([id_prata_assunto], map: "NonClusteredIndex-20241121-111828")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Cadastros_Condominios {
+  setor      String? @db.VarChar(3)
+  quadra     String? @db.VarChar(3)
+  condominio String @db.VarChar(2)
+  sql        String @db.VarChar(500)
+
+  @@index([sql], map: "NonClusteredIndex-20241121-151716")
+  @@id([sql, condominio])
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Cadastros_Filiacoes {
+  sqlPai             String   @db.VarChar(20)
+  sqlPai_situacao    String?   @db.VarChar(10)
+  sqlFilho           String   @db.VarChar(20)
+  sqlFilho_situacao  String?   @db.VarChar(10)
+  COD_NRO_SET_ENGL   Decimal?  @db.Decimal(3, 0)
+  COD_NRO_QDR_ENGL   Decimal?  @db.Decimal(3, 0)
+  COD_NRO_LOTE_ENGL  Decimal?  @db.Decimal(4, 0)
+  COD_DIGI_SQL_ENGL  Decimal?  @db.Decimal(1, 0)
+  COD_NRO_SET_ENGB   Decimal?  @db.Decimal(3, 0)
+  COD_NRO_QDR_ENGB   Decimal?  @db.Decimal(3, 0)
+  COD_NRO_LOTE_ENGB  Decimal?  @db.Decimal(4, 0)
+  COD_DIGI_SQL_ENGB  Decimal?  @db.Decimal(1, 0)
+  dtCarga            DateTime? @db.DateTime
+  COD_SITU_IMOV_ENGL String?   @db.VarChar(1)
+  COD_SITU_IMOV_ENGB String?   @db.VarChar(1)
+
+  @@index([sqlPai], map: "NonClusteredIndex-20241121-151823")
+  @@index([sqlFilho], map: "NonClusteredIndex-20241121-151857")
+  @@id([sqlPai, sqlFilho])
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Categorias {
+  id_prata_categoria BigInt    @unique(map: "Idx-20241113", clustered: true)
+  id_prata_assunto   BigInt    @unique
+  sistema            String?   @db.VarChar(20)
+  processo           String?   @db.VarChar(20)
+  protocolo          String?   @db.VarChar(20)
+  codigoAssunto      String?   @db.VarChar(50)
+  codcategoria       String?   @db.VarChar(50)
+  txtcategoria       String?   @db.VarChar(500)
+  codsubcategoria    String?   @db.VarChar(500)
+  txtsubcategoria    String?   @db.VarChar(500)
+  codgrupoatividade  String?   @db.VarChar(500)
+  txtgrupoatividade  String?   @db.VarChar(1000)
+  codatividade       String?   @db.VarChar(500)
+  txtatividade       String?   @db.VarChar(500)
+  unidades           String?   @db.VarChar(100)
+  dtcarga            DateTime? @db.DateTime
+  obs                String?   @db.VarChar(100)
+  areaComputavel     String?   @db.VarChar(20)
+  areaNaoComputavel  String?   @db.VarChar(20)
+
+  assunto            Assuntos? @relation(fields: [id_prata_assunto], references: [id_prata_assunto])
+
+  @@index([sistema, processo, codigoAssunto], map: "NonClusteredIndex-20241113-163408")
+  @@index([id_prata_assunto], map: "NonClusteredIndex-20241121-152012")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Comuniqueses {
+  id_prata_comuniquese      BigInt?
+  id_prata_assunto          BigInt?
+  sistema                   String?   @db.VarChar(20)
+  processo                  String?   @db.VarChar(20)
+  protocolo                 String?   @db.VarChar(20)
+  codigoAssunto             String?   @db.VarChar(50)
+  codigoComuniquese         String?   @db.VarChar(50)
+  situacaoComuniqueSe       String?   @db.VarChar(50)
+  unidadeComuniquese        String?   @db.VarChar(100)
+  codUnidComuniqueseSimproc String?   @db.VarChar(100)
+  responsavelComuniquese    String?   @db.VarChar(100)
+  responsavelComuniqueseRF  String?   @db.VarChar(100)
+  dtEmissao                 DateTime? @db.Date
+  dtPublicacaoDOC           DateTime? @db.Date
+  dtcarga                   DateTime? @db.DateTime
+  dtEncaminhamento          DateTime? @db.DateTime
+  unidadeEncaminhamento     String?   @db.VarChar(50)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Despachos {
+  id_prata_assunto       BigInt?
+  sistema                String?   @db.VarChar(20)
+  processo               String?   @db.VarChar(20)
+  protocolo              String?   @db.VarChar(20)
+  codigoAssunto          String?   @db.VarChar(50)
+  dtcarga                DateTime? @db.DateTime
+  id_prata_despacho      BigInt?
+  situacaoDespacho       String?   @db.VarChar(50)
+  unidadeDespacho        String?   @db.VarChar(100)
+  codUnidDespachoSimproc String?   @db.VarChar(100)
+  responsavelDespacho    String?   @db.VarChar(100)
+  responsavelDespachoRF  String?   @db.VarChar(100)
+  dtEmissaoDespacho      DateTime? @db.Date
+  dtPublicacaoDOC        DateTime? @db.Date
+
+  @@index([id_prata_assunto], map: "NonClusteredIndex-20241121-152345")
+  @@index([processo, codigoAssunto, sistema], map: "NonClusteredIndex-20241121-152405")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Enderecos {
+  id_prata_endereco BigInt    @unique(map: "ClusteredIndex-20241113-161415", clustered: true)
+  id_prata_assunto  BigInt    @unique
+  sistema           String?   @db.VarChar(20)
+  processo          String?   @db.VarChar(20)
+  protocolo         String?   @db.VarChar(20)
+  codigoAssunto     String?   @db.VarChar(50)
+  codlog            String?   @db.VarChar(50)
+  logradouro        String?   @db.VarChar(200)
+  numero            String?   @db.VarChar(50)
+  bairro            String?   @db.VarChar(100)
+  cep               String?   @db.VarChar(50)
+  subprefeitura     String?   @db.VarChar(50)
+  distrito          String?   @db.VarChar(50)
+  dtcarga           DateTime? @db.DateTime
+  complemento       String?   @db.VarChar(200)
+
+  cadastro          Cadastros? @relation(fields: [id_prata_assunto], references: [id_prata_assunto])
+
+  @@index([processo, codigoAssunto, sistema], map: "NonClusteredIndex-20241113-164038")
+  @@index([id_prata_assunto], map: "NonClusteredIndex-20241121-152826")
+}
+
+model ETL_Logs {
+  id_log_etl             BigInt    @id(map: "PK_Log_ETL") @default(autoincrement())
+  tabela_nome            String?   @db.NVarChar(50)
+  qtde_registros         BigInt?
+  etl_Inicio             DateTime? @db.DateTime
+  etl_fim                DateTime? @db.DateTime
+  etl_tempo_execucao     DateTime? @db.Time
+  sequencia              Int?
+  status                 String?   @db.NVarChar(15)
+  dt_carga_tabela_origem DateTime? @db.DateTime
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Interessados {
+  sistema               String? @db.VarChar(20)
+  Protocolo             String? @db.VarChar(50)
+  nomeInteressado       String? @db.VarChar(255)
+  Atribuicao            String? @db.VarChar(50)
+  TipoPessoaInteressado String? @db.VarChar(50)
+  CPF_CNPJ_Interessado  String? @db.VarChar(50)
+  Responsavel           String? @db.VarChar(100)
+  NumConselho           String? @db.VarChar(50)
+  id_prata_interessado  BigInt? @unique(map: "ClusteredIndex-20241113-161635", clustered: true)
+  codigoAssunto         String? @db.VarChar(50)
+  id_prata_assunto      BigInt?
+  processo              String? @db.VarChar(20)
+
+  @@index([processo, codigoAssunto, sistema], map: "Idx-20241111")
+  @@index([id_prata_assunto], map: "NonClusteredIndex-20241121-153929")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Predios {
+  sistema           String? @db.VarChar(20)
+  processo          String? @db.VarChar(20)
+  protocolo         String? @db.VarChar(20)
+  codigoAssuntoObra String? @db.VarChar(50)
+  categoria         String? @db.VarChar(200)
+  codPredio         Int?
+  qtAndares         Int?
+  qtPredios         Int?
+  qtAptos           Int?
+  qtBlocos          Int?
+  qtCasas           Int?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Processos {
+  id_prata_processo  BigInt?   @unique(map: "ClusteredIndex-20241113-162003", clustered: true)
+  sistema            String?   @db.VarChar(20)
+  processo           String?   @db.VarChar(20)
+  protocolo          String?   @db.VarChar(20)
+  dtProtocolo        DateTime? @db.Date
+  dtAutuacaoProcesso DateTime? @db.Date
+  situacaoProcesso   String?   @db.VarChar(50)
+  OrgaoGestor        String?   @db.VarChar(50)
+  dtcarga            DateTime? @db.DateTime
+  codigoProcesso     String?   @db.VarChar(50)
+  COD_UNID_PCSS_SEI  String?   @db.VarChar(10)
+  ANO_AUTC_PCSS      String?   @db.VarChar(10)
+  COD_NRO_PCSS       String?   @db.VarChar(10)
+  COD_DIGI_PCSS      String?   @db.VarChar(10)
+  COD_ADM            Decimal?  @db.Decimal(2, 0)
+  COD_ORG_ADM        Decimal?  @db.Decimal(2, 0)
+  COD_UNID_ADM       Decimal?  @db.Decimal(2, 0)
+  COD_DIV            Decimal?  @db.Decimal(3, 0)
+
+  @@index([processo], map: "NonClusteredIndex-20241121-154049")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Zonas_Usos {
+  id_prata_zonauso BigInt?   @unique(map: "ClusteredIndex-20241113-162043", clustered: true)
+  id_prata_assunto BigInt?
+  sistema          String?   @db.VarChar(20)
+  processo         String?   @db.VarChar(20)
+  protocolo        String?   @db.VarChar(20)
+  codigoAssunto    String?   @db.VarChar(50)
+  tipoZonaUso      String?   @db.VarChar(20)
+  zonaUso          String?   @db.VarChar(150)
+  siglaZonaUso     String?   @db.VarChar(50)
+  dtcarga          DateTime? @db.DateTime
+
+  @@index([processo, codigoAssunto, sistema], map: "NonClusteredIndex-20241113-164216")
+  @@index([id_prata_assunto], map: "NonClusteredIndex-20241121-155008")
+  @@ignore
+}

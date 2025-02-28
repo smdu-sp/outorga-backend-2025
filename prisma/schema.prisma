@@ -7,6 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Tipo {
+  PDE
+  COTA
+}
+
 model Usuario {
   id             String         @id @default(uuid())
   nome           String
@@ -20,6 +25,35 @@ model Usuario {
   alterado_em    DateTime       @default(now()) @updatedAt
 
   @@map("usuarios")
+}
+
+model Processo {
+  id             String         @id @default(uuid())
+  tipo           Tipo?
+  codigo         String?
+  num_processo   String         @unique
+  protocolo_ad   String?
+  cpf_cnpj       String?
+  data_entrada   DateTime       @db.Date
+
+  parcelas       Parcela[]
+
+  @@map("processos")
+}
+
+model Parcela {
+  id              String         @id @default(uuid())
+  num_parcela     Int
+  valor           Float
+  vencimento      DateTime       @db.Date
+  data_quitacao   DateTime?      @db.Date
+  ano_pagamento   Int?
+  status_quitacao Boolean        @default(false)
+
+  processo_id     String
+  processo        Processo       @relation(fields: [processo_id], references: [id])
+
+  @@map("parcelas")
 }
 
 enum Permissao {

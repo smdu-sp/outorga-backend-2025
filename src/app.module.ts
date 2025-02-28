@@ -7,11 +7,12 @@ import { UsuariosModule } from './usuarios/usuarios.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RoleGuard } from './auth/guards/role.guard';
+import { ProcessosModule } from './processos/processos.module';
 
 @Global()
 @Module({
   exports: [AppService],
-  imports: [CadastrosModule, PrismaModule, AuthModule, UsuariosModule],
+  imports: [CadastrosModule, PrismaModule, AuthModule, UsuariosModule, ProcessosModule],
   controllers: [],
   providers: [AppService,
     {

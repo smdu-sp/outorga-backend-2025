@@ -28,13 +28,15 @@ model Usuario {
 }
 
 model Processo {
-  id             String         @id @default(uuid())
-  tipo           Tipo?
-  codigo         String?
-  num_processo   String         @unique
-  protocolo_ad   String?
-  cpf_cnpj       String?
-  data_entrada   DateTime       @db.Date
+  id                    String         @id @default(uuid())
+  tipo                  Tipo?
+  codigo                String?
+  num_processo          String         @unique
+  protocolo_ad          String?
+  cpf_cnpj              String?
+  data_entrada          DateTime?      @db.Date
+  // unidade_licenciamento UnidadesLicenciamento?
+  // valor_total_outorga   Float?
 
   parcelas       Parcela[]
 
@@ -49,11 +51,20 @@ model Parcela {
   data_quitacao   DateTime?      @db.Date
   ano_pagamento   Int?
   status_quitacao Boolean        @default(false)
+  // anoEmissaoGuia  Int?
+  // codSiglaUnidade String? SEL
+  // codTipoServico  Int?
+  // numGuia         Int?
 
   processo_id     String
   processo        Processo       @relation(fields: [processo_id], references: [id])
 
   @@map("parcelas")
+}
+
+enum UnidadesLicenciamento {
+  RESID
+  COMIN
 }
 
 enum Permissao {

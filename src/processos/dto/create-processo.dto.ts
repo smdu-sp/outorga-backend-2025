@@ -6,8 +6,8 @@ export class CreateProcessoDto {
     num_processo: string
     protocolo_ad?: string
     cpf_cnpj?: string
-    data_entrada: Date
-    parcelas: IParcela[]
+    data_entrada?: Date
+    parcelas?: IParcela[]
 }
 
 export interface IParcela {

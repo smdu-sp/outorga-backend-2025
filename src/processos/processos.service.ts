@@ -71,7 +71,7 @@ export class ProcessosService {
       skip: (pagina - 1) * limite,
       take: limite,
       include: { parcelas: {
-        orderBy: { vencimento: 'desc' }
+        orderBy: { num_parcela: 'asc' }
       }}
     });
     return {
@@ -83,17 +83,21 @@ export class ProcessosService {
   }
 
   async relatoriosPrincipal(data_inicio?: string, data_fim?: string) {
-    const processosTotal = await this.prisma.processo.count({ 
-      where: {
-        parcelas: {
-          some: {
-            AND: [
-              data_inicio && { data_quitacao: { gte: new Date(data_inicio)}},
-              data_fim && { data_quitacao: { lte: new Date(data_fim)}}
-            ]
-          }
-        }
-      } 
+    const data = new Date();
+    const gte = new Date(data.getFullYear(), data.getMonth(), 1);
+    const lte = new Date(data.getFullYear(), data.getMonth() + 1, 0);
+
+    const valor_mes = await this.prisma.parcela.aggregate({
+      _sum: { valor: true },
+      where: { vencimento: { gte, lte }}
     });
+
+    const processos_mes = await this.prisma.parcela.findMany({
+      where: { vencimento: { gte, lte }},
+      select: { processo_id: true },
+      distinct: ['processo_id']
+    })
+
+    return { valor_mes: +valor_mes._sum.valor, processos_mes: processos_mes.length };
   }
 }

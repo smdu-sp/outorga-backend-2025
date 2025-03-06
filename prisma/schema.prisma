@@ -12,6 +12,12 @@ enum Tipo {
   COTA
 }
 
+enum StatusPagamento {
+  EM_PAGAMENTO
+  QUITADO
+  QUEBRA
+}
+
 model Usuario {
   id             String         @id @default(uuid())
   nome           String
@@ -28,13 +34,14 @@ model Usuario {
 }
 
 model Processo {
-  id                    String         @id @default(uuid())
+  id                    String          @id @default(uuid())
   tipo                  Tipo?
   codigo                String?
-  num_processo          String         @unique
+  num_processo          String          @unique
   protocolo_ad          String?
   cpf_cnpj              String?
-  data_entrada          DateTime?      @db.Date
+  data_entrada          DateTime?       @db.Date
+  status_pagamento      StatusPagamento @default(EM_PAGAMENTO)
   // unidade_licenciamento UnidadesLicenciamento?
   // valor_total_outorga   Float?
 

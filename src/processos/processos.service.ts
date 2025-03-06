@@ -83,9 +83,10 @@ export class ProcessosService {
   }
 
   async relatoriosPrincipal(data_inicio?: string, data_fim?: string) {
-    const data = new Date();
-    const gte = new Date(data.getFullYear(), data.getMonth(), 1);
-    const lte = new Date(data.getFullYear(), data.getMonth() + 1, 0);
+    const data_inicio_date = data_inicio ? new Date(data_inicio) : new Date();
+    const data_fim_date = data_fim ? new Date(data_fim) : new Date();
+    const gte = new Date(data_inicio_date.getFullYear(), data_inicio_date.getMonth(), 1);
+    const lte = new Date(data_fim_date.getFullYear(), data_fim_date.getMonth() + 1, 0);
 
     const valor_mes = await this.prisma.parcela.aggregate({
       _sum: { valor: true },

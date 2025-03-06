@@ -3,6 +3,9 @@
 /node_modules
 .env
 
+#prisma
+/prisma/seed.ts
+
 # Logs
 logs
 *.log

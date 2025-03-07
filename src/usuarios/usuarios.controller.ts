@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   Query,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { UsuariosService } from './usuarios.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
@@ -16,6 +18,7 @@ import { UsuarioAtual } from 'src/auth/decorators/usuario-atual.decorator';
 import { Usuario } from '@prisma/client';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { BuscarNovoResponseDTO, UsuarioAutorizadoResponseDTO, UsuarioDesativadoResponseDTO, UsuarioPaginadoResponseDTO, UsuarioResponseDTO } from './dto/usuario-response.dto';
+import { IsPublic } from 'src/auth/decorators/is-public.decorator';
 
 @ApiTags('Usuarios')
 @ApiBearerAuth()

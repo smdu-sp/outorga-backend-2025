@@ -3,14 +3,15 @@ import {
   ForbiddenException,
   Global,
   Injectable,
-  InternalServerErrorException
+  InternalServerErrorException,
+  NotFoundException
 } from '@nestjs/common';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { $Enums, Permissao, Usuario } from '@prisma/client';
 import { AppService } from 'src/app.service';
-import { Client, createClient } from 'ldapjs';
+import { Client as LdapClient } from 'ldapts';
 import { BuscarNovoResponseDTO, UsuarioAutorizadoResponseDTO, UsuarioPaginadoResponseDTO, UsuarioResponseDTO } from './dto/usuario-response.dto';
 
 @Global()
@@ -193,57 +194,32 @@ export class UsuariosService {
       });
       return usuarioReativado;
     }
-    const client: Client = createClient({
+    const client: LdapClient = new LdapClient({
       url: process.env.LDAP_SERVER,
     });
-    await new Promise<void>((resolve, reject) => {
-      client.bind(`${process.env.USER_LDAP}${process.env.LDAP_DOMAIN}`, process.env.PASS_LDAP, (err) => {
-        if (err) {
-          client.destroy();
-          reject(new InternalServerErrorException('Não foi possível buscar o usuário.'));
-        }
-        resolve();
-      });
-    });
-    const usuario_ldap = await new Promise<any>((resolve, reject) => {
-      client.search(
+    try {
+      await client.bind(`${process.env.USER_LDAP}${process.env.LDAP_DOMAIN}`, process.env.PASS_LDAP);
+    } catch (error) {
+      throw new InternalServerErrorException('Não foi possível buscar o usuário.');
+    }
+    let nome: string, email: string;
+    try {
+      const usuario = await client.search(
         process.env.LDAP_BASE,
         {
           filter: `(&(samaccountname=${login})(company=SMUL))`,
           scope: 'sub',
           attributes: ['name', 'mail'],
-        },
-        (err, res) => {
-          if (err) {
-            client.destroy();
-            resolve('erro');
-          }
-          res.on('searchEntry', async (entry) => {
-            const nome = JSON.stringify(
-              entry.pojo.attributes[0].values[0],
-            ).replaceAll('"', '');
-            const email = JSON.stringify(
-              entry.pojo.attributes[1].values[0],
-            ).replaceAll('"', '').toLowerCase();
-            resolve({ nome, email });
-          });
-          res.on('error', (err) => {
-            client.destroy();
-            resolve('erro');
-          });
-          res.on('end', () => {
-            client.destroy();
-            resolve('erro');
-          });
-        },
+        }
       );
-    });
-    client.destroy();
-    if (!usuario_ldap.email) throw new BadRequestException('Usuário não encontrado.');
-    return {
-      login,
-      nome: usuario_ldap.nome,
-      email: usuario_ldap.email,
-    };
+      const { name, mail } = usuario.searchEntries[0];
+      nome = name.toString();
+      email = mail.toString();
+    } catch (error) {
+      await client.unbind();
+      throw new InternalServerErrorException('Não foi possível buscar o usuário.');
+    }
+    if (!nome || !email) throw new NotFoundException('Usuário não encontrado.');
+    return { login, nome, email };
   }
 }

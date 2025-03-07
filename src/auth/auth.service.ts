@@ -1,11 +1,11 @@
-import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { UsuariosService } from 'src/usuarios/usuarios.service';
 import { Usuario } from '@prisma/client';
 import { UsuarioPayload } from './models/UsuarioPayload';
 import { JwtService } from '@nestjs/jwt';
 import { UsuarioToken } from './models/UsuarioToken';
-import { Client, createClient } from 'ldapjs';
 import { UsuarioJwt } from './models/UsuarioJwt';
+import { Client as LdapClient } from 'ldapts';
 
 @Injectable()
 export class AuthService {
@@ -41,63 +41,39 @@ export class AuthService {
   async validateUser(login: string, senha: string) {
     let usuario = await this.usuariosService.buscarPorLogin(login);
     if (usuario && usuario.status === false)
-      throw new UnauthorizedException('Usuário inativo.');
-    if (process.env.ENVIRONMENT == 'local') {
+      throw new UnauthorizedException('Usuário desativado.');
+    if (process.env.ENVIRONMENT == 'local')
       if (usuario) return usuario;
-    }
-    const client: Client = createClient({
+    const client: LdapClient = new LdapClient({
       url: process.env.LDAP_SERVER,
     });
-    await new Promise<void>((resolve, reject) => {
-      client.bind(`${login}${process.env.LDAP_DOMAIN}`, senha, (err: any) => {
-        if (err) {
-          client.destroy();
-          reject(new UnauthorizedException('Credenciais incorretas.'));
-        }
-        resolve();
-      });
-    });
-    if (!usuario) {
-      usuario = await new Promise<any>((resolve, reject) => {
-        client.search(
-          process.env.LDAP_BASE,
-          {
-            filter: `(&(samaccountname=${login}))`,
-            scope: 'sub',
-            attributes: ['name', 'mail'],
-          },
-          (err, res) => {
-            if (err) {
-              client.destroy();
-              reject();
-            }
-            res.on('searchEntry', async (entry) => {
-              const { name, mail } = Object.fromEntries(entry.pojo.attributes.map(({ type, values }) => [type, values[0]]));
-              const novoUsuario = await this.usuariosService.criar({
-                nome: name,
-                login,
-                email: mail.toLowerCase(),
-                permissao: 'USR',
-                status: false,
-              });
-              client.destroy();
-              if (novoUsuario)
-                reject(
-                  new ForbiddenException(
-                    'Usuário criado, aguardando aprovação.',
-                  ),
-                );
-              reject(
-                new UnauthorizedException(
-                  'Não foi possível fazer login no momento.',
-                ),
-              );
-            });
-          },
-        );
-      });
+    try {
+      await client.bind(`${login}${process.env.LDAP_DOMAIN}`, senha);
+    } catch (error) {
+      console.log(error);
+      throw new UnauthorizedException('Credenciais incorretas.');
     }
-    client.destroy();
+    if (!usuario) {
+      const { searchEntries } = await client.search(
+        process.env.LDAP_BASE,
+        {
+          filter: `(&(samaccountname=${login}))`,
+          scope: 'sub',
+        }
+      );
+      const { name, mail } = searchEntries[0];
+      const novoUsuario = await this.usuariosService.criar({
+        nome: name as string,
+        login,
+        email: (mail as string).toLowerCase(),
+        permissao: 'USR',
+        status: false,
+      });
+      await client.unbind();
+      if (novoUsuario) throw new ForbiddenException('Usuário criado, aguardando aprovação.');
+      throw new InternalServerErrorException('Não foi possível fazer login no momento.');
+    }
+    await client.unbind();
     return usuario;
   }
 }

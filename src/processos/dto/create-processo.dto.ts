@@ -5,7 +5,6 @@ export class CreateProcessoDto {
     codigo?: string
     num_processo: string
     protocolo_ad?: string
-    cpf_cnpj?: string
     data_entrada?: Date
     parcelas?: IParcela[]
 }
@@ -17,4 +16,5 @@ export interface IParcela {
     data_quitacao?: Date
     ano_pagamento?: number
     status_quitacao: boolean
+    cpf_cnpj?: string
 }

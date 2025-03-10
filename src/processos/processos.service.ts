@@ -25,7 +25,6 @@ export class ProcessosService {
             codigo: processo.codigo,
             num_processo: processo.num_processo,
             protocolo_ad: processo.protocolo_ad,
-            cpf_cnpj: processo.cpf_cnpj,
             data_entrada: processo.data_entrada,
             parcelas: {
               create: processo.parcelas.map((parcela) => ({
@@ -34,7 +33,8 @@ export class ProcessosService {
                 num_parcela: parcela.num_parcela,
                 data_quitacao: parcela.data_quitacao || undefined,
                 status_quitacao: parcela.status_quitacao || false,
-                ano_pagamento: parcela.ano_pagamento || undefined
+                ano_pagamento: parcela.ano_pagamento || undefined,
+                cpf_cnpj: parcela.cpf_cnpj,
               })),
             }
           }

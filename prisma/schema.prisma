@@ -23,14 +23,28 @@ model Usuario {
   nome           String
   login          String         @unique
   email          String         @unique
-  permissao      Permissao      @default(USR)
   status         Boolean        @default(true)
-  avatar         String?
+  avatar         String?        @db.Text
+  dev            Boolean        @default(false)
 
   criado_em      DateTime       @default(now())
   alterado_em    DateTime       @default(now()) @updatedAt
 
+  permissoes     Permissao[]
+
   @@map("usuarios")
+}
+
+model Permissao {
+  id             String         @id @default(uuid())
+  nome           String         @unique
+
+  criado_em      DateTime       @default(now())
+  alterado_em    DateTime       @default(now()) @updatedAt
+
+  usuarios       Usuario[]
+
+  @@map("permissoes")
 }
 
 model Processo {
@@ -39,13 +53,12 @@ model Processo {
   codigo                String?
   num_processo          String          @unique
   protocolo_ad          String?
-  cpf_cnpj              String?
   data_entrada          DateTime?       @db.Date
   status_pagamento      StatusPagamento @default(EM_PAGAMENTO)
   // unidade_licenciamento UnidadesLicenciamento?
   // valor_total_outorga   Float?
 
-  parcelas       Parcela[]
+  parcelas              Parcela[]
 
   @@map("processos")
 }
@@ -57,6 +70,7 @@ model Parcela {
   vencimento      DateTime       @db.Date
   data_quitacao   DateTime?      @db.Date
   ano_pagamento   Int?
+  cpf_cnpj        String?
   status_quitacao Boolean        @default(false)
   // anoEmissaoGuia  Int?
   // codSiglaUnidade String? SEL
@@ -64,7 +78,7 @@ model Parcela {
   // numGuia         Int?
 
   processo_id     String
-  processo        Processo       @relation(fields: [processo_id], references: [id])
+  processo        Processo       @relation(fields: [processo_id], references: [id], onDelete: Cascade)
 
   @@map("parcelas")
 }
@@ -72,11 +86,4 @@ model Parcela {
 enum UnidadesLicenciamento {
   RESID
   COMIN
-}
-
-enum Permissao {
-  DEV
-  SUP
-  ADM
-  USR
 }

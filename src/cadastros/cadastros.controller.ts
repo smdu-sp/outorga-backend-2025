@@ -24,7 +24,6 @@ export class CadastrosController {
     return this.cadastrosService.buscaListaSQLTabela(body.listaSql);
   }
 
-  @IsPublic()
   @Get('lista-sistemas')
   buscarListaSistemas() {
     return this.cadastrosService.buscaListaSistemas();

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateProcessoDto } from './dto/create-processo.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AppService } from 'src/app.service';
-import { Processo, Usuario } from '@prisma/client';
+import { Processo } from '@prisma/client';
 import { ProcessoPaginadoResponseDTO } from './dto/processo-response.dto';
 
 @Injectable()

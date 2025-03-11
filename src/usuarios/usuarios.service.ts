@@ -22,11 +22,20 @@ export class UsuariosService {
     private app: AppService,
   ) {}
 
-  async retornaPermissao(id: string): Promise<Permissao> {
-    const usuario: Usuario = await this.prisma.usuario.findUnique({ 
-      where: { id } 
+  async permitido(id: string, permissao: string): Promise<boolean> {
+    if (!id || id === '') throw new BadRequestException('ID vazio.');
+    if (!permissao || permissao === '') throw new BadRequestException('ID vazio.');
+    const usuario = await this.prisma.usuario.findUnique({ 
+      where: { 
+        id,
+        OR: [
+          { permissoes: { some: { permissao }}},
+          { dev: true }
+        ]
+      },
+      select: { id: true }
     });
-    return usuario.permissao;
+    return !usuario ? false : true;
   }
 
   async listaCompleta(): Promise<UsuarioResponseDTO[]> {
@@ -38,41 +47,13 @@ export class UsuariosService {
     return lista;
   }
 
-  validaPermissaoCriador(
-    permissao: $Enums.Permissao,
-    permissaoCriador: $Enums.Permissao,
-  ): Permissao {
-    if (
-      permissao === $Enums.Permissao.DEV &&
-      permissaoCriador === $Enums.Permissao.SUP
-    )
-      permissao = $Enums.Permissao.SUP;
-    if (
-      (permissao === $Enums.Permissao.DEV ||
-        permissao === $Enums.Permissao.SUP) &&
-      permissaoCriador === $Enums.Permissao.ADM
-    )
-      permissao = $Enums.Permissao.ADM;
-    return permissao;
-  }
-
   async criar(
-    createUsuarioDto: CreateUsuarioDto, 
-    criador?: Usuario
+    createUsuarioDto: CreateUsuarioDto,
   ): Promise<UsuarioResponseDTO> {
     const loguser: UsuarioResponseDTO = await this.buscarPorLogin(createUsuarioDto.login);
     if (loguser) throw new ForbiddenException('Login já cadastrado.');
     const emailuser: UsuarioResponseDTO = await this.buscarPorEmail(createUsuarioDto.email);
     if (emailuser) throw new ForbiddenException('Email já cadastrado.');
-    if (!criador) createUsuarioDto.permissao = 'USR';
-    if (criador) {
-      const permissaoCriador: Permissao = await this.retornaPermissao(criador.id);
-      if (permissaoCriador !== $Enums.Permissao.DEV)
-        createUsuarioDto.permissao = this.validaPermissaoCriador(
-          createUsuarioDto.permissao,
-          permissaoCriador,
-        );
-    }
     const usuario: Usuario = await this.prisma.usuario.create({
       data: { ...createUsuarioDto }
     });
@@ -88,8 +69,7 @@ export class UsuariosService {
     pagina: number = 1,
     limite: number = 10,
     status: number = 1,
-    busca?: string,
-    permissao?: string,
+    busca?: string
   ): Promise<UsuarioPaginadoResponseDTO> {
     [pagina, limite] = this.app.verificaPagina(pagina, limite);
     const searchParams = {
@@ -98,8 +78,6 @@ export class UsuariosService {
         { login: { contains: busca } },
         { email: { contains: busca } },
       ]}),
-      ...(permissao !== '' && { permissao: $Enums.Permissao[permissao] }),
-      ...(usuario.permissao !== 'DEV' ? { status: true } : status && { status: status === 1 }),
     };
     const total: number = await this.prisma.usuario.count({ where: searchParams });
     if (total == 0) return { total: 0, pagina: 0, limite: 0, data: [] };
@@ -130,7 +108,7 @@ export class UsuariosService {
   }
 
   async buscarPorLogin(login: string): Promise<UsuarioResponseDTO> {
-    return await this.prisma.usuario.findUnique({ where: { login } });
+    return await this.prisma.usuario.findUnique({ where: { login }, include: { permissoes: true } });
   }
 
   async atualizar(
@@ -139,18 +117,11 @@ export class UsuariosService {
     updateUsuarioDto: UpdateUsuarioDto,
   ): Promise<UsuarioResponseDTO> {
     const usuarioLogado: Usuario = await this.buscarPorId(usuario.id);
-    if (!usuarioLogado || ['TEC', 'USR'].includes(usuarioLogado.permissao) && id !== usuarioLogado.id)
-      throw new ForbiddenException('Operação não autorizada para este usuário.')
     if (updateUsuarioDto.login) {
       const usuario: Usuario = await this.buscarPorLogin(updateUsuarioDto.login);
       if (usuario && usuario.id !== id)
         throw new ForbiddenException('Login já cadastrado.');
     }
-    if (updateUsuarioDto.permissao)
-      updateUsuarioDto.permissao = this.validaPermissaoCriador(
-        updateUsuarioDto.permissao,
-        usuarioLogado.permissao,
-      );
     const usuarioAtualizado: Usuario = await this.prisma.usuario.update({
       data: updateUsuarioDto,
       where: { id },

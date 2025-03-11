@@ -1,9 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { $Enums } from '@prisma/client';
 import {
-  IsDate,
+  IsBoolean,
   IsEmail,
-  IsEnum,
   IsNumber,
   IsString,
   MinLength,
@@ -29,10 +27,6 @@ export class CreateUsuarioDto {
   @ApiProperty()
   unidade_id?: string;
 
-  @IsEnum($Enums.Permissao, { message: 'Escolha uma permissão válida.' })
-  @ApiProperty()
-  permissao?: $Enums.Permissao;
-
   @IsNumber({}, { message: 'Status inválido!' })
   @ApiProperty()
   status?: boolean;
@@ -40,4 +34,8 @@ export class CreateUsuarioDto {
   @IsString({ message: 'Avatar inválido!' })
   @ApiProperty()
   avatar?: string;
+
+  @IsBoolean({ message: 'Permissão inválida!' })
+  @ApiProperty()
+  dev?: boolean;
 }

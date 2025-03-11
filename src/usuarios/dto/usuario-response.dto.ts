@@ -11,8 +11,6 @@ export class UsuarioResponseDTO {
     @ApiProperty()
     email: string
     @ApiProperty()
-    permissao: Permissao
-    @ApiProperty()
     status: boolean
     @ApiProperty()
     criado_em: Date
@@ -20,6 +18,10 @@ export class UsuarioResponseDTO {
     alterado_em: Date
     @ApiProperty()
     avatar: string
+    @ApiProperty()
+    dev: boolean
+    @ApiProperty()
+    permissoes?: Permissao[]
 }
 
 export class UsuarioPaginadoResponseDTO {

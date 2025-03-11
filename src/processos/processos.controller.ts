@@ -2,11 +2,13 @@ import { Controller, Get, Post, Body, Query } from '@nestjs/common';
 import { ProcessosService } from './processos.service';
 import { CreateProcessoDto } from './dto/create-processo.dto';
 import { ProcessoPaginadoResponseDTO } from './dto/processo-response.dto';
+import { Permissao } from 'src/auth/decorators/permissao.decorator';
 
 @Controller('processos')
 export class ProcessosController {
   constructor(private readonly processosService: ProcessosService) {}
 
+  @Permissao('processos_criar')
   @Post('criar')
   criar(@Body() createProcessoDto: CreateProcessoDto[]) {
     return this.processosService.criar(createProcessoDto);

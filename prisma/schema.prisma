@@ -35,14 +35,28 @@ model Usuario {
   @@map("usuarios")
 }
 
-model Permissao {
+model GrupoPermissao {
   id             String         @id @default(uuid())
   nome           String         @unique
 
   criado_em      DateTime       @default(now())
   alterado_em    DateTime       @default(now()) @updatedAt
 
+  permissoes     Permissao[]
+
+  @@map("grupos_permissoes")
+}
+
+model Permissao {
+  id             String             @id @default(uuid())
+  nome           String
+  permissao      String             @unique
+
+  criado_em      DateTime           @default(now())
+  alterado_em    DateTime           @default(now()) @updatedAt
+
   usuarios       Usuario[]
+  grupos         GrupoPermissao[]
 
   @@map("permissoes")
 }
@@ -57,6 +71,9 @@ model Processo {
   status_pagamento      StatusPagamento @default(EM_PAGAMENTO)
   // unidade_licenciamento UnidadesLicenciamento?
   // valor_total_outorga   Float?
+
+  criado_em      DateTime               @default(now())
+  alterado_em    DateTime               @default(now()) @updatedAt
 
   parcelas              Parcela[]
 
@@ -76,6 +93,9 @@ model Parcela {
   // codSiglaUnidade String? SEL
   // codTipoServico  Int?
   // numGuia         Int?
+
+  criado_em      DateTime        @default(now())
+  alterado_em    DateTime        @default(now()) @updatedAt
 
   processo_id     String
   processo        Processo       @relation(fields: [processo_id], references: [id], onDelete: Cascade)

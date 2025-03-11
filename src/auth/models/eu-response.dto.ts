@@ -11,8 +11,6 @@ export class EuResponseDTO {
     @ApiProperty()
     email: string
     @ApiProperty()
-    permissao: Permissao
-    @ApiProperty()
     status: boolean
     @ApiProperty()
     criado_em: Date
@@ -20,4 +18,6 @@ export class EuResponseDTO {
     alterado_em: Date
     @ApiProperty()
     avatar?: string;
+    @ApiProperty()
+    dev: boolean
 }

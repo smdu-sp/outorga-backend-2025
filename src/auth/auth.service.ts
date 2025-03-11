@@ -25,8 +25,8 @@ export class AuthService {
   }
 
   async getTokens(usuario: UsuarioJwt) {
-    const { id, login, nome, email, permissao, status, avatar } = usuario;
-    const payload: UsuarioPayload = { sub: id, login, nome, email, permissao, status, avatar };
+    const { id, login, nome, email, status, avatar, dev } = usuario;
+    const payload: UsuarioPayload = { sub: id, login, nome, email, status, avatar, dev };
     const access_token = await this.jwtService.signAsync(payload, {
       expiresIn: '15m',
       secret: process.env.JWT_SECRET,
@@ -66,7 +66,6 @@ export class AuthService {
         nome: name as string,
         login,
         email: (mail as string).toLowerCase(),
-        permissao: 'USR',
         status: false,
       });
       await client.unbind();

@@ -9,11 +9,12 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RoleGuard } from './auth/guards/role.guard';
 import { ProcessosModule } from './processos/processos.module';
 import { PermissoesModule } from './permissoes/permissoes.module';
+import { GruposPermissaoModule } from './grupos-permissao/grupos-permissao.module';
 
 @Global()
 @Module({
   exports: [AppService],
-  imports: [CadastrosModule, PrismaModule, AuthModule, UsuariosModule, ProcessosModule, PermissoesModule],
+  imports: [CadastrosModule, PrismaModule, AuthModule, UsuariosModule, ProcessosModule, PermissoesModule, GruposPermissaoModule],
   controllers: [],
   providers: [AppService,
     {

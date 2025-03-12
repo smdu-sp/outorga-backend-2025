@@ -31,6 +31,7 @@ model Usuario {
   alterado_em    DateTime       @default(now()) @updatedAt
 
   permissoes     Permissao[]
+  grupos         GrupoPermissao[]
 
   @@map("usuarios")
 }
@@ -43,6 +44,7 @@ model GrupoPermissao {
   alterado_em    DateTime       @default(now()) @updatedAt
 
   permissoes     Permissao[]
+  usuarios       Usuario[]
 
   @@map("grupos_permissoes")
 }

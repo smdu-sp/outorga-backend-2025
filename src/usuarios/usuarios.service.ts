@@ -30,7 +30,8 @@ export class UsuariosService {
         id,
         OR: [
           { permissoes: { some: { permissao }}},
-          { dev: true }
+          { grupos: { some: { permissoes: { some: { permissao }}}}},
+          { dev: true },
         ]
       },
       select: { id: true }
@@ -42,8 +43,7 @@ export class UsuariosService {
     const lista: Usuario[] = await this.prisma.usuario.findMany({
       orderBy: { nome: 'asc' },
     });
-    if (!lista || lista.length == 0) 
-      throw new ForbiddenException('Nenhum usuário encontrado.');
+    if (!lista || lista.length == 0) throw new ForbiddenException('Nenhum usuário encontrado.');
     return lista;
   }
 
@@ -57,10 +57,7 @@ export class UsuariosService {
     const usuario: Usuario = await this.prisma.usuario.create({
       data: { ...createUsuarioDto }
     });
-    if (!usuario)
-      throw new InternalServerErrorException(
-        'Não foi possível criar o usuário, tente novamente.',
-      );
+    if (!usuario) throw new InternalServerErrorException('Não foi possível criar o usuário, tente novamente.');
     return usuario;
   }
 
@@ -134,9 +131,7 @@ export class UsuariosService {
       data: { status: false },
       where: { id },
     });
-    return {
-      desativado: true,
-    };
+    return { desativado: true };
   }
 
   async autorizaUsuario(id: string): Promise<UsuarioAutorizadoResponseDTO> {

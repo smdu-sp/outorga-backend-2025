@@ -12,12 +12,12 @@ export class PermissoesService {
     private app: AppService
   ) {}
 
-  async buscarPorPermissao(permissao: string) {
+  async buscarPorPermissao(permissao: string): Promise<Permissao> {
     const permissaoBusca = await this.prisma.permissao.findUnique({ where: { permissao }});
     return permissaoBusca;
   }
   
-  async criar(createPermissaoDto: CreatePermissaoDto) {
+  async criar(createPermissaoDto: CreatePermissaoDto): Promise<Permissao> {
     const { nome, permissao, grupos } = createPermissaoDto;
     if (!nome || nome === '') throw new BadRequestException('O nome da permissão deve ser informado.');
     if (!permissao || permissao === '') throw new BadRequestException('A permissão deve ser informada.');
@@ -32,7 +32,7 @@ export class PermissoesService {
     return permissaoNova;
   }
   
-  async listaCompleta() {
+  async listaCompleta(): Promise<Permissao[]> {
     const lista: Permissao[] = await this.prisma.permissao.findMany({
       orderBy: { nome: 'asc' }
     });
@@ -45,7 +45,7 @@ export class PermissoesService {
     pagina: number = 1,
     limite: number = 10,
     busca?: string
-  ) {
+  ): Promise<{ total: number; pagina: number; limite: number; data: Permissao[] }> {
     [pagina, limite] = this.app.verificaPagina(pagina, limite);
     const searchParams = {
       ...(busca && { OR: [
@@ -70,14 +70,14 @@ export class PermissoesService {
     };
   }
 
-  async buscarPorId(id: string) {
+  async buscarPorId(id: string): Promise<Permissao> {
     if (!id || id === '') throw new BadRequestException('O ID da permissão deve ser informado.');
     const permissao = await this.prisma.permissao.findUnique({ where: { id }, include: { grupos: true }});
     if (!permissao) throw new NotFoundException('Permissão nao encontrada.');
     return permissao;
   }
 
-  async atualizar(id: string, updatePermissaoDto: UpdatePermissaoDto) {
+  async atualizar(id: string, updatePermissaoDto: UpdatePermissaoDto): Promise<Permissao> {
     const { nome, permissao, grupos } = updatePermissaoDto;
     if (!id || id === '') throw new BadRequestException('O ID da permissão deve ser informado.');
     if (nome === '') throw new BadRequestException('O nome da permissão não pode ser vazio.');
@@ -97,10 +97,10 @@ export class PermissoesService {
     return permissaoAtualizada;
   }
 
-  async excluir(id: string) {
+  async excluir(id: string): Promise<{ destivado: boolean }> {
     if (!id || id === '') throw new BadRequestException('O ID da permissão deve ser informado.');
     const permissao = await this.prisma.permissao.delete({ where: { id }});
     if (!permissao) throw new NotFoundException('Permissão nao encontrada.');
-    return { message: 'Permissão excluida com sucesso.' };
+    return { destivado: true };
   }
 }

@@ -8,11 +8,18 @@ import { Permissao } from 'src/auth/decorators/permissao.decorator';
 export class ProcessosController {
   constructor(private readonly processosService: ProcessosService) {}
 
+  @Permissao('processos_importar')
+  @Post('importar')
+  importar(@Body() createProcessoDto: CreateProcessoDto[]) {
+    return this.processosService.importar(createProcessoDto);
+  }
+
   @Permissao('processos_criar')
   @Post('criar')
-  criar(@Body() createProcessoDto: CreateProcessoDto[]) {
+  criar(@Body() createProcessoDto: CreateProcessoDto) {
     return this.processosService.criar(createProcessoDto);
   }
+
 
   @Get('buscar-tudo')
   buscarTudo(

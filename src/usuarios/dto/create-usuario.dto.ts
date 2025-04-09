@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsArray,
   IsBoolean,
   IsEmail,
   IsNumber,
@@ -38,4 +39,12 @@ export class CreateUsuarioDto {
   @IsBoolean({ message: 'Permissão inválida!' })
   @ApiProperty()
   dev?: boolean;
+
+  @IsArray({ message: 'Grupos Inválidos!' })
+  @ApiProperty()
+  grupos?: string[];
+
+  @IsArray({ message: 'Permissões inválidas!' })
+  @ApiProperty()
+  permissoes?: string[];
 }

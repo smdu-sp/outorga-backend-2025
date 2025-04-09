@@ -19,7 +19,7 @@ export class GruposPermissaoService {
     if (validaGrupoPermissao) throw new ForbiddenException('Esse grupo de permissão já está cadastrado.');
     const grupo_permissao = await this.prisma.grupoPermissao.create({ include: { permissoes: true }, data: {
       nome,
-      permissoes: permissoes && permissoes.length > 0 ? { connect: permissoes.map(id => ({ id }))} : {}
+      permissoes: permissoes && permissoes.length >= 0 ? { connect: permissoes.map(id => ({ id }))} : {}
     }});
     if (!grupo_permissao) throw new ForbiddenException('Nao foi possivel criar o grupo de permissão.');
     return grupo_permissao;
@@ -83,10 +83,10 @@ export class GruposPermissaoService {
     const validaGrupoPermissao = await this.buscarPorNome(nome);
     if (validaGrupoPermissao && validaGrupoPermissao.id !== id) throw new ForbiddenException('Esse grupo de permissão já está cadastrado.');
     const grupo_permissao = await this.prisma.grupoPermissao.update({ where: { id }, data: {
-      ...(nome && { nome }), 
-      ...(permissoes && permissoes.length > 0 && { permissoes: { connect: permissoes.map(id => ({ id }))}})
+      ...(nome && { nome }),
+      ...(permissoes && permissoes.length >= 0 && { permissoes: { set: [], connect: permissoes.map(id => ({ id }))}})
     }});
-    if (!grupo_permissao) throw new ForbiddenException('Nao foi possivel atualizar o grupo de permissão.');
+    if (!grupo_permissao) throw new ForbiddenException('Não foi possivel atualizar o grupo de permissão.');
     return grupo_permissao;
   }
 

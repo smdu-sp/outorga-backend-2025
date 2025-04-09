@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateProcessoDto } from './dto/create-processo.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AppService } from 'src/app.service';
@@ -12,7 +12,7 @@ export class ProcessosService {
     private app: AppService
   ) {}
   
-  async criar(createProcessoDto: CreateProcessoDto[]) {
+  async importar(createProcessoDto: CreateProcessoDto[]) {
     const resultado = {
       erros: [],
       novos_registros: []
@@ -49,6 +49,39 @@ export class ProcessosService {
       }
     }));
     return resultado;
+  }
+
+  async criar(createProcessoDto: CreateProcessoDto) {
+    const { num_processo, parcelas, ...processo } = createProcessoDto;
+    const processoExiste = this.buscarPorProcesso(num_processo);
+    if (processoExiste) throw new ForbiddenException('Processo já cadastrado.');
+    const novoProcesso = await this.prisma.processo.create({
+      data: {
+        num_processo,
+        ...processo,
+        parcelas: {
+          create: parcelas.map((parcela) => ({
+            valor: parcela.valor || 0,
+            vencimento: parcela.vencimento,
+            num_parcela: parcela.num_parcela,
+            data_quitacao: parcela.data_quitacao || undefined,
+            status_quitacao: parcela.status_quitacao || false,
+            ano_pagamento: parcela.ano_pagamento || undefined,
+            cpf_cnpj: parcela.cpf_cnpj,
+          })),
+        }
+      },
+      include: { parcelas: true }
+    });
+    if (!novoProcesso) throw new InternalServerErrorException('Erro ao cadastrar processo.');
+    return novoProcesso;
+  }
+
+  async buscarPorProcesso(num_processo: string) {
+    const processo = this.prisma.processo.findUnique({
+      where: { num_processo }
+    });
+    return processo;
   }
 
   async buscarTudo(

@@ -50,12 +50,18 @@ export class UsuariosService {
   async criar(
     createUsuarioDto: CreateUsuarioDto,
   ): Promise<UsuarioResponseDTO> {
+    const { grupos, permissoes } = createUsuarioDto;
     const loguser: UsuarioResponseDTO = await this.buscarPorLogin(createUsuarioDto.login);
     if (loguser) throw new ForbiddenException('Login já cadastrado.');
     const emailuser: UsuarioResponseDTO = await this.buscarPorEmail(createUsuarioDto.email);
     if (emailuser) throw new ForbiddenException('Email já cadastrado.');
     const usuario: Usuario = await this.prisma.usuario.create({
-      data: { ...createUsuarioDto }
+      data: {
+        ...createUsuarioDto,
+        grupos: grupos && grupos.length > 0 ? { connect: grupos.map(id => ({ id }))} : {},
+        permissoes: permissoes && permissoes.length > 0 ? { connect: permissoes.map(id => ({ id }))} : {},
+      },
+      include: { grupos: true, permissoes: true },
     });
     if (!usuario) throw new InternalServerErrorException('Não foi possível criar o usuário, tente novamente.');
     return usuario;
@@ -81,6 +87,7 @@ export class UsuariosService {
     [pagina, limite] = this.app.verificaLimite(pagina, limite, total);
     const usuarios: Usuario[] = await this.prisma.usuario.findMany({
       where: searchParams,
+      include: { grupos: true, permissoes: true },
       orderBy: { nome: 'asc' },
       skip: (pagina - 1) * limite,
       take: limite,
@@ -95,7 +102,8 @@ export class UsuariosService {
 
   async buscarPorId(id: string): Promise<UsuarioResponseDTO> {
     const usuario: Usuario = await this.prisma.usuario.findUnique({
-      where: { id }
+      where: { id },
+      include: { grupos: true, permissoes: true },
     });
     return usuario;
   }
@@ -114,14 +122,22 @@ export class UsuariosService {
     updateUsuarioDto: UpdateUsuarioDto,
   ): Promise<UsuarioResponseDTO> {
     const usuarioLogado: Usuario = await this.buscarPorId(usuario.id);
+    const { grupos, permissoes } = updateUsuarioDto;
     if (updateUsuarioDto.login) {
       const usuario: Usuario = await this.buscarPorLogin(updateUsuarioDto.login);
-      if (usuario && usuario.id !== id)
-        throw new ForbiddenException('Login já cadastrado.');
+      if (usuario && usuario.id !== id){
+        console.log(usuario);
+        // throw new ForbiddenException('Login já cadastrado.');
+      }
     }
     const usuarioAtualizado: Usuario = await this.prisma.usuario.update({
-      data: updateUsuarioDto,
+      data: {
+        ...updateUsuarioDto,
+        ...(grupos && grupos.length >= 0 && { grupos: { set: [], connect: grupos.map(id => ({ id }))}}),
+        ...(permissoes && permissoes.length >= 0 && { permissoes: { set: [], connect: permissoes.map(id => ({ id }))}}),
+      },
       where: { id },
+      include: { grupos: true, permissoes: true },
     });
     return usuarioAtualizado;
   }
@@ -180,7 +196,7 @@ export class UsuariosService {
       );
       const { name, mail } = usuario.searchEntries[0];
       nome = name.toString();
-      email = mail.toString();
+      email = mail.toString().toLowerCase();
     } catch (error) {
       await client.unbind();
       throw new InternalServerErrorException('Não foi possível buscar o usuário.');

@@ -89,8 +89,7 @@ export class PermissoesService {
     const permissaoAtualizada = await this.prisma.permissao.update({ where: { id }, data: {
       ...(nome && { nome }),
       ...(permissao && { permissao }),
-      ...(grupos && { grupos: {
-        connect: grupos.map(id => ({ id }))
+      ...(grupos && grupos.length >= 0 && { grupos: { set: [], connect: grupos.map(id => ({ id }))
       }})
     }})
     if (!permissaoAtualizada) throw new InternalServerErrorException('Nao foi possivel atualizar a permissao.');

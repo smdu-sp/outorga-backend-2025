@@ -1,5 +1,4 @@
 import { Global, Module } from '@nestjs/common';
-import { CadastrosModule } from './cadastros/cadastros.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -14,7 +13,7 @@ import { GruposPermissaoModule } from './grupos-permissao/grupos-permissao.modul
 @Global()
 @Module({
   exports: [AppService],
-  imports: [CadastrosModule, PrismaModule, AuthModule, UsuariosModule, ProcessosModule, PermissoesModule, GruposPermissaoModule],
+  imports: [PrismaModule, AuthModule, UsuariosModule, ProcessosModule, PermissoesModule, GruposPermissaoModule],
   controllers: [],
   providers: [AppService,
     {

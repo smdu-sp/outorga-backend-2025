@@ -3,6 +3,7 @@ import { ProcessosService } from './processos.service';
 import { CreateProcessoDto } from './dto/create-processo.dto';
 import { ProcessoPaginadoResponseDTO } from './dto/processo-response.dto';
 import { Permissao } from 'src/auth/decorators/permissao.decorator';
+import { IsPublic } from 'src/auth/decorators/is-public.decorator';
 
 @Controller('processos')
 export class ProcessosController {
@@ -20,6 +21,10 @@ export class ProcessosController {
     return this.processosService.criar(createProcessoDto);
   }
 
+  @Get('dashboard')
+  dashboard() {
+    return this.processosService.dashboard();
+  }
 
   @Get('buscar-tudo')
   buscarTudo(
